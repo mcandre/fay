@@ -33,7 +33,7 @@ makeCompilerTests = do
       let root = (reverse . drop 1 . dropWhile (/='.') . reverse) file
           out = toJsName file
       outExists <- doesFileExist root
-      compileFromTo def { configTypecheck = False, configDirectoryIncludes = ["tests/"] } file (Just out)
+      compileFromTo (addConfigDirectoryInclude "tests/" $ def { configTypecheck = False }) file (Just out)
       result <- runJavaScriptFile out
       if outExists
          then do output <- readFile root

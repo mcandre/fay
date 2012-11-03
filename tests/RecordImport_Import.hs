@@ -1,4 +1,4 @@
-
+{- NOTE: This file is also used in the Api tests. -}
 
 module RecordImport_Import where
 
@@ -26,4 +26,3 @@ printS = ffi "console.log(%1)"
 main = do
   printS $ showR $ R 1
   printS $ showFields $ Fields { fieldFoo = 2, fieldBar = 3 }
-

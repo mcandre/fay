@@ -17,7 +17,21 @@ module Language.Fay.Types
   ,CompilesTo(..)
   ,Printable(..)
   ,Fay
-  ,CompileConfig(..)
+  ,CompileConfig(
+     configTCO
+    ,configFlattenApps
+    ,configExportBuiltins
+    ,configPrettyPrint
+    ,configHtmlWrapper
+    ,configHtmlJSLibs
+    ,configLibrary
+    ,configWarn
+    ,configFilePath
+    ,configTypecheck
+    ,configWall
+  )
+  ,configDirectoryIncludes
+  ,addConfigDirectoryInclude
   ,CompileState(..)
   ,defaultCompileState
   ,FundamentalType(..)
@@ -35,6 +49,7 @@ import           Data.Default
 import           Data.Map               as M
 import           Data.String
 import           Language.Haskell.Exts
+import           System.FilePath
 
 import           Paths_fay
 
@@ -46,7 +61,7 @@ data CompileConfig = CompileConfig
   { configTCO               :: Bool
   , configFlattenApps       :: Bool
   , configExportBuiltins    :: Bool
-  , configDirectoryIncludes :: [FilePath]
+  , _configDirectoryIncludes :: [FilePath]
   , configPrettyPrint       :: Bool
   , configHtmlWrapper       :: Bool
   , configHtmlJSLibs        :: [FilePath]
@@ -60,6 +75,12 @@ data CompileConfig = CompileConfig
 -- | Default configuration.
 instance Default CompileConfig where
   def = CompileConfig False False True [] False False [] False True Nothing True False
+
+configDirectoryIncludes :: CompileConfig -> [FilePath]
+configDirectoryIncludes cfg = _configDirectoryIncludes cfg
+
+addConfigDirectoryInclude :: FilePath -> CompileConfig -> CompileConfig
+addConfigDirectoryInclude fp cfg = cfg { _configDirectoryIncludes = fp : _configDirectoryIncludes cfg }
 
 -- | State of the compiler.
 data CompileState = CompileState
@@ -86,11 +107,12 @@ data NameScope = ScopeImported ModuleName (Maybe Name)
 -- | The default compiler state.
 defaultCompileState :: CompileConfig -> IO CompileState
 defaultCompileState config = do
+  srcdir <- fmap (takeDirectory . takeDirectory . takeDirectory) (getDataFileName "src/Language/Fay/Stdlib.hs")
   ffi <- getDataFileName "src/Language/Fay/Stdlib.hs"
   types <- getDataFileName "src/Language/Fay/Types.hs"
   prelude <- getDataFileName "src/Language/Fay/Prelude.hs"
   return $ CompileState {
-    stateConfig = config
+    stateConfig = addConfigDirectoryInclude srcdir config
   , stateExports = []
   , stateExportAll = True
   , stateModuleName = ModuleName "Main"

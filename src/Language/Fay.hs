@@ -8,6 +8,7 @@
 module Language.Fay
   (module Language.Fay.Types
   ,compileFile
+  ,compileFileWithState
   ,compileFromTo
   ,compileFromToAndGenerateHtml
   ,toJsName
@@ -67,15 +68,14 @@ compileFromToAndGenerateHtml config filein fileout = do
 compileFile :: CompileConfig -> FilePath -> IO (Either CompileError String)
 compileFile config filein = do
   runtime <- getDataFileName "js/runtime.js"
-  srcdir <- fmap (takeDirectory . takeDirectory . takeDirectory) (getDataFileName "src/Language/Fay/Stdlib.hs")
   raw <- readFile runtime
   hscode <- readFile filein
-  compileToModule filein
-                  config { configDirectoryIncludes = configDirectoryIncludes config ++ [srcdir]
-                         }
-                  raw
-                  compileToplevelModule
-                  hscode
+  compileToModule filein config raw compileToplevelModule hscode
+
+compileFileWithState :: CompileConfig -> FilePath -> IO (Either CompileError (PrintState,CompileState))
+compileFileWithState config filein = do
+  hscode <- readFile filein
+  compileViaStr filein config compileToplevelModule hscode
 
 -- | Compile the given module to a runnable module.
 compileToModule :: (Show from,Show to,CompilesTo from to)

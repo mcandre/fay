@@ -103,8 +103,8 @@ printCompile config with from = do
 
 -- | Compile a String of Fay and print it as beautified JavaScript.
 printTestCompile :: String -> IO ()
-printTestCompile = printCompile def { configWarn = False,
-  configDirectoryIncludes = ["/home/chris/Projects/me/fay/"] } compileModule
+printTestCompile = printCompile (addConfigDirectoryInclude "/home/chris/Projects/me/fay/" $ def { configWarn = False })
+                     compileModule
 
 -- | Compile the given Fay code for the documentation. This is
 -- specialised because the documentation isn't really “real”
